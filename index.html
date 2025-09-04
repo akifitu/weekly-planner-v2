@@ -1,0 +1,68 @@
+<!DOCTYPE html>
+<html lang="tr">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Basit Haftalık Planlayıcı</title>
+    <link rel="stylesheet" href="styles.css">
+    <link rel="manifest" href="manifest.webmanifest">
+</head>
+<body>
+    <div class="container">
+        <!-- Üst Bar -->
+        <header class="header">
+            <div class="week-navigator">
+                <button id="prevWeek" class="nav-btn">‹ Önceki</button>
+                <button id="currentWeek" class="current-week-btn">Bu Hafta</button>
+                <button id="nextWeek" class="nav-btn">Sonraki ›</button>
+            </div>
+            
+            <div class="week-info">
+                <h1 id="weekDisplay">2025 • Hafta 1</h1>
+                <p id="dateRange">30 Ara - 5 Oca</p>
+            </div>
+
+            <div class="actions">
+                <button id="darkModeToggle" class="dark-mode-toggle" aria-label="Karanlık/Aydınlık mod">
+                    <div class="toggle-icon">
+                        <div class="sun">☀️</div>
+                        <div class="moon">🌙</div>
+                    </div>
+                </button>
+                <button id="clearWeek" class="clear-btn">Bu Haftayı Temizle</button>
+                <button id="clearAll" class="clear-btn danger">Tümünü Temizle</button>
+            </div>
+        </header>
+
+        <!-- Ana Planner Izgarası -->
+        <main class="planner-container">
+            <!-- Ana Grid ve Sabah Toggle -->
+            <div class="main-grid-container">
+                <!-- Sabah Toggle - Sol Köşe -->
+                <button 
+                    id="morningToggle" 
+                    class="morning-toggle-corner" 
+                    aria-expanded="false"
+                    data-tooltip="00:00–05:00 aralığını gizle/göster"
+                    title="00:00–05:00 aralığını gizle/göster"
+                >
+                    🌅
+                </button>
+                
+                <!-- Ana Grid -->
+                <div id="plannerGrid" class="planner-grid main-grid">
+                    <!-- Ana grid dinamik olarak JavaScript ile oluşturulacak -->
+                </div>
+            </div>
+
+        </main>
+
+        <!-- Alt Bilgi -->
+        <footer class="footer">
+            <p>📝 Verileriniz sadece bu cihazda saklanır • Gizlilik endişesi yok • Kayıt gerekmez</p>
+        </footer>
+    </div>
+
+    <script src="app.js"></script>
+</body>
+</html>
