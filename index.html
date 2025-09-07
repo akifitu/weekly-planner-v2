@@ -22,11 +22,22 @@
                 <p id="dateRange">30 Ara - 5 Oca</p>
             </div>
 
+            <div class="weekly-goal">
+                <input 
+                    type="text" 
+                    id="weeklyGoal" 
+                    class="weekly-goal-input" 
+                    placeholder="Bu haftanın hedefi..."
+                    maxlength="30"
+                />
+            </div>
+
             <div class="actions">
-                <button id="darkModeToggle" class="dark-mode-toggle" aria-label="Karanlık/Aydınlık mod">
-                    <div class="toggle-icon">
-                        <div class="sun">☀️</div>
-                        <div class="moon">🌙</div>
+                <button id="themeToggle" class="theme-toggle" aria-label="Tema değiştir: Açık/Karanlık/Sepia">
+                    <div class="theme-icon">
+                        <div class="light-icon">☀️</div>
+                        <div class="dark-icon">🌙</div>
+                        <div class="sepia-icon">📜</div>
                     </div>
                 </button>
                 <button id="clearWeek" class="clear-btn">Bu Haftayı Temizle</button>
@@ -52,6 +63,32 @@
                 <!-- Ana Grid -->
                 <div id="plannerGrid" class="planner-grid main-grid">
                     <!-- Ana grid dinamik olarak JavaScript ile oluşturulacak -->
+                </div>
+            </div>
+
+            <!-- Habits Section -->
+            <div class="habits-section">
+                <!-- Habits Toggle - Sol Köşe -->
+                <button 
+                    id="habitsToggle" 
+                    class="habits-toggle-corner" 
+                    aria-expanded="true"
+                    data-tooltip="Alışkanlıkları gizle/göster"
+                    title="Alışkanlıkları gizle/göster"
+                >
+                    🎯
+                </button>
+                
+                <!-- Habits Grid -->
+                <div id="habitsGrid" class="habits-grid">
+                    <!-- Habits grid dinamik olarak JavaScript ile oluşturulacak -->
+                </div>
+                
+                <!-- Add Habit Button -->
+                <div class="add-habit-container">
+                    <button id="addHabitBtn" class="add-habit-btn">
+                        + Yeni Alışkanlık Ekle
+                    </button>
                 </div>
             </div>
 
