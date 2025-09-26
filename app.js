@@ -2,8 +2,8 @@
 class WeeklyPlanner {
     constructor() {
         this.currentWeek = this.getCurrentWeek();
-        this.mainHours = this.generateHours(0, 23); // 00:00 - 23:30 (full grid)
-        this.morningHours = this.generateHours(0, 5); // 00:00 - 05:30 (accordion)
+        this.mainHours = this.generateTimeBlocks(); // 3 saatlik bloklar (full grid)
+        this.morningHours = []; // Morning collapse sistemi kaldırıldı
         this.days = ['Pazartesi', 'Salı', 'Çarşamba', 'Perşembe', 'Cuma', 'Cumartesi', 'Pazar'];
         this.dayKeys = ['Mon', 'Tue', 'Wed', 'Thu', 'Fri', 'Sat', 'Sun'];
         this.data = {};
@@ -17,8 +17,7 @@ class WeeklyPlanner {
         this.timeIndicatorInterval = null;
         this.currentTheme = localStorage.getItem('theme') || 'light'; // light, dark, sepia
         
-        // Morning collapse durumu
-        this.morningCollapsed = localStorage.getItem('planner:morning:collapsed') === 'true';
+        // Morning collapse sistemı kaldırıldı (3 saatlik bloklar ile gerek yok)
         // Habits collapse durumu
         this.habitsCollapsed = localStorage.getItem('planner:habits:collapsed') === 'false';
 
@@ -31,12 +30,11 @@ class WeeklyPlanner {
         this.loadWeeklyGoal();
         this.createAllGrids();
         this.createHabitsGrid();
-        this.applyMorningCollapse();
         this.applyHabitsCollapse();
         this.updateWeekDisplay();
         this.bindEvents();
         this.startTimeIndicator();
-        console.log('Weekly Planner initialized');
+        console.log('Weekly Planner initialized with 3-hour blocks');
     }
 
     // ISO Hafta hesaplama
@@ -62,16 +60,16 @@ class WeeklyPlanner {
         return `planner:${this.currentWeek.year}-W${this.currentWeek.week.toString().padStart(2, '0')}`;
     }
 
-    // Saat aralığı oluşturma (yarım saatlik aralıklar)
-    generateHours(start, end) {
-        const hours = [];
-        for (let i = start; i <= end; i++) {
-            hours.push(i.toString().padStart(2, '0') + ':00');
-            if (i < end) { // Son saatte :30 eklemeyelim
-                hours.push(i.toString().padStart(2, '0') + ':30');
-            }
+    // 3 saatlik zaman blokları oluşturma
+    generateTimeBlocks() {
+        const blocks = [];
+        // 24 saati 3'erli bloklara böl: 00-03, 03-06, 06-09, 09-12, 12-15, 15-18, 18-21, 21-24
+        for (let i = 0; i < 24; i += 3) {
+            const startHour = i.toString().padStart(2, '0');
+            const endHour = (i + 3).toString().padStart(2, '0');
+            blocks.push(`${startHour}:00-${endHour}:00`);
         }
-        return hours;
+        return blocks;
     }
 
     // Veri yükleme ve kaydetme
@@ -405,12 +403,12 @@ class WeeklyPlanner {
             return;
         }
 
-        // Gün için tüm hücreleri say
-        const daySlots = [...this.morningHours, ...this.mainHours];
+        // Gün için tüm 3 saatlik blokları say
+        const daySlots = this.mainHours; // Artık sadece mainHours (8 adet 3 saatlik blok)
         let completedSlots = 0;
         
-        daySlots.forEach(hour => {
-            const slotId = `${dayKey}-${hour}`;
+        daySlots.forEach(timeBlock => {
+            const slotId = `${dayKey}-${timeBlock}`;
             if (this.completedTasks[slotId]) {
                 completedSlots++;
             }
@@ -573,8 +571,8 @@ class WeeklyPlanner {
         }
     }
 
-    // Zaman kontrolü ve işaretleme fonksiyonları
-    isPastTime(dayKey, hour) {
+    // Zaman kontrolü ve işaretleme fonksiyonları (3 saatlik bloklar için)
+    isPastTime(dayKey, timeBlock) {
         const now = new Date();
         const currentWeek = this.getWeekFromDate(now);
         
@@ -586,24 +584,22 @@ class WeeklyPlanner {
         const dayIndex = this.dayKeys.indexOf(dayKey);
         const currentDayIndex = now.getDay() === 0 ? 6 : now.getDay() - 1; // Pazartesi=0
         const currentHour = now.getHours();
-        const currentMinute = now.getMinutes();
         
-        // Slot zamanını parse et
-        const [slotHourStr, slotMinuteStr] = hour.split(':');
-        const slotHour = parseInt(slotHourStr);
-        const slotMinute = parseInt(slotMinuteStr);
+        // Time block'u parse et (örn: "09:00-12:00")
+        const [startTime] = timeBlock.split('-');
+        const [startHourStr] = startTime.split(':');
+        const blockStartHour = parseInt(startHourStr);
 
         // Geçmiş günler
         if (dayIndex < currentDayIndex) {
             return true;
         }
         
-        // Bugün ve geçmiş saatler/dakikalar
+        // Bugün ve geçmiş 3 saatlik bloklar
         if (dayIndex === currentDayIndex) {
-            if (slotHour < currentHour) {
-                return true;
-            }
-            if (slotHour === currentHour && slotMinute < currentMinute) {
+            // Eğer şu anki saat, bloğun bitiş saatinden büyükse geçmiş
+            const blockEndHour = blockStartHour + 3;
+            if (currentHour >= blockEndHour) {
                 return true;
             }
         }
@@ -676,13 +672,13 @@ class WeeklyPlanner {
     }
 
     markPastTimes() {
-        // Geçmiş saatleri işaretle ve checkbox ekle
+        // Geçmiş 3 saatlik blokları işaretle ve checkbox ekle
         this.dayKeys.forEach(dayKey => {
-            [...this.morningHours, ...this.mainHours].forEach(hour => {
-                if (this.isPastTime(dayKey, hour)) {
-                    const cell = document.querySelector(`[data-slot="${dayKey}-${hour}"]`);
+            this.mainHours.forEach(timeBlock => {
+                if (this.isPastTime(dayKey, timeBlock)) {
+                    const cell = document.querySelector(`[data-slot="${dayKey}-${timeBlock}"]`);
                     if (cell && !cell.classList.contains('past-time')) {
-                        const slotId = `${dayKey}-${hour}`;
+                        const slotId = `${dayKey}-${timeBlock}`;
                         const checkbox = this.createCompletionCheckbox(slotId);
                         cell.appendChild(checkbox);
                         cell.classList.add('past-time');
@@ -698,29 +694,7 @@ class WeeklyPlanner {
         });
     }
 
-    // Morning Collapse İşlevleri
-    toggleMorningCollapse() {
-        this.morningCollapsed = !this.morningCollapsed;
-        localStorage.setItem('planner:morning:collapsed', this.morningCollapsed.toString());
-        this.applyMorningCollapse();
-    }
-
-    applyMorningCollapse() {
-        const toggle = document.getElementById('morningToggle');
-        const grid = document.getElementById('plannerGrid');
-        
-        if (this.morningCollapsed) {
-            // Morning saatleri gizle
-            grid.classList.add('morning-collapsed');
-            toggle.setAttribute('aria-expanded', 'false');
-            toggle.title = '00:00–05:00 aralığını göster';
-        } else {
-            // Morning saatleri göster
-            grid.classList.remove('morning-collapsed');
-            toggle.setAttribute('aria-expanded', 'true');
-            toggle.title = '00:00–05:00 aralığını gizle';
-        }
-    }
+    // Morning Collapse sistemi kaldırıldı (3 saatlik bloklar ile gerek yok)
 
     // Grid oluşturma (ana fonksiyon)
     createAllGrids() {
@@ -767,13 +741,13 @@ class WeeklyPlanner {
             });
         }
 
-        // Saat satırları
-        hours.forEach(hour => {
-            // Saat başlığı
+        // Zaman bloku satırları (3 saatlik bloklar)
+        hours.forEach(timeBlock => {
+            // Zaman bloku başlığı
             const timeHeader = document.createElement('div');
             timeHeader.className = 'time-header';
-            timeHeader.textContent = hour;
-            timeHeader.setAttribute('data-hour', hour);
+            timeHeader.textContent = timeBlock;
+            timeHeader.setAttribute('data-timeblock', timeBlock);
             grid.appendChild(timeHeader);
 
             // Her gün için hücre
@@ -781,20 +755,20 @@ class WeeklyPlanner {
                 const cell = document.createElement('div');
                 cell.className = 'planner-cell';
                 cell.contentEditable = true;
-                cell.setAttribute('data-slot', `${dayKey}-${hour}`);
+                cell.setAttribute('data-slot', `${dayKey}-${timeBlock}`);
                 cell.setAttribute('tabindex', '0');
                 cell.setAttribute('role', 'textbox');
-                cell.setAttribute('aria-label', `${this.days[this.dayKeys.indexOf(dayKey)]} ${hour}`);
+                cell.setAttribute('aria-label', `${this.days[this.dayKeys.indexOf(dayKey)]} ${timeBlock}`);
 
                 // Kayıtlı veri varsa yükle
-                const slotId = `${dayKey}-${hour}`;
+                const slotId = `${dayKey}-${timeBlock}`;
                 if (this.data[slotId]) {
                     cell.textContent = this.data[slotId];
                     this.applyCellColor(cell, this.data[slotId]);
                 }
 
                 // Completion checkbox ekle
-                if (this.isPastTime(dayKey, hour)) {
+                if (this.isPastTime(dayKey, timeBlock)) {
                     const checkbox = this.createCompletionCheckbox(slotId);
                     cell.appendChild(checkbox);
                     cell.classList.add('past-time');
@@ -906,31 +880,23 @@ class WeeklyPlanner {
 
         const dayKey = this.dayKeys[dayIndex];
         
-        // Hangi yarım saatlik slot'ta olduğumuzu belirle
-        let targetTimeSlot;
-        if (currentMinute < 30) {
-            targetTimeSlot = currentHour.toString().padStart(2, '0') + ':00';
-        } else {
-            targetTimeSlot = currentHour.toString().padStart(2, '0') + ':30';
-        }
+        // Hangi 3 saatlik blokta olduğumuzu belirle
+        const blockStartHour = Math.floor(currentHour / 3) * 3;
+        const blockEndHour = blockStartHour + 3;
+        const targetTimeBlock = `${blockStartHour.toString().padStart(2, '0')}:00-${blockEndHour.toString().padStart(2, '0')}:00`;
 
         // İlgili hücreyi bul
-        const targetCell = document.querySelector(`[data-slot="${dayKey}-${targetTimeSlot}"]`);
+        const targetCell = document.querySelector(`[data-slot="${dayKey}-${targetTimeBlock}"]`);
         if (!targetCell) return;
 
         // Indicator oluştur
         const indicator = document.createElement('div');
         indicator.className = 'time-indicator';
         
-        // Hücre içindeki pozisyonu hesapla
-        let minutePercent;
-        if (currentMinute < 30) {
-            // 00-29 dakika aralığında - ilk yarım saatte
-            minutePercent = (currentMinute / 30) * 100;
-        } else {
-            // 30-59 dakika aralığında - ikinci yarım saatte
-            minutePercent = ((currentMinute - 30) / 30) * 100;
-        }
+        // Hücre içindeki pozisyonu hesapla (3 saatlik blok içinde)
+        const hourInBlock = currentHour - blockStartHour;
+        const totalMinutesInBlock = (hourInBlock * 60) + currentMinute;
+        const minutePercent = (totalMinutesInBlock / 180) * 100; // 180 dakika = 3 saat
         
         indicator.style.top = `${minutePercent}%`;
         
@@ -1040,18 +1006,7 @@ class WeeklyPlanner {
             this.toggleTheme();
         });
 
-        // Akordeon toggle event'leri
-        document.getElementById('morningToggle').addEventListener('click', () => {
-            this.toggleMorningCollapse();
-        });
-
-        // Morning toggle klavye desteği
-        document.getElementById('morningToggle').addEventListener('keydown', (e) => {
-            if (e.key === 'Enter' || e.key === ' ') {
-                e.preventDefault();
-                this.toggleMorningCollapse();
-            }
-        });
+        // Morning toggle kaldırıldı (3 saatlik bloklar ile gerek yok)
 
         document.getElementById('clearWeek').addEventListener('click', () => {
             this.clearCurrentWeek();

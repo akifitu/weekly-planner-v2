@@ -437,14 +437,14 @@ body {
 
 .planner-cell {
     background: var(--bg-cell);
-    min-height: 30px;
+    min-height: 80px;
     border-right: 1px solid rgba(226, 232, 240, 0.3);
     border-bottom: 1px solid rgba(226, 232, 240, 0.3);
     outline: none;
-    padding: 0.25rem 0.5rem;
+    padding: 0.75rem;
     font-family: inherit;
-    font-size: 0.8rem;
-    line-height: 1.3;
+    font-size: 0.9rem;
+    line-height: 1.4;
     resize: none;
     overflow-y: auto;
     color: var(--text-primary);
@@ -651,30 +651,7 @@ body {
     margin-bottom: -1px;
 }
 
-/* Morning collapsed state - 00:00-05:30 saatlerini gizle */
-.main-grid.morning-collapsed .time-header[data-hour="00:00"],
-.main-grid.morning-collapsed .time-header[data-hour="00:30"],
-.main-grid.morning-collapsed .time-header[data-hour="01:00"],
-.main-grid.morning-collapsed .time-header[data-hour="01:30"],
-.main-grid.morning-collapsed .time-header[data-hour="02:00"],
-.main-grid.morning-collapsed .time-header[data-hour="02:30"],
-.main-grid.morning-collapsed .time-header[data-hour="03:00"],
-.main-grid.morning-collapsed .time-header[data-hour="03:30"],
-.main-grid.morning-collapsed .time-header[data-hour="04:00"],
-.main-grid.morning-collapsed .time-header[data-hour="04:30"],
-.main-grid.morning-collapsed .time-header[data-hour="05:00"],
-.main-grid.morning-collapsed .time-header[data-hour="05:30"] {
-    display: none;
-}
-
-.main-grid.morning-collapsed .planner-cell[data-slot*="-00:"],
-.main-grid.morning-collapsed .planner-cell[data-slot*="-01:"],
-.main-grid.morning-collapsed .planner-cell[data-slot*="-02:"],
-.main-grid.morning-collapsed .planner-cell[data-slot*="-03:"],
-.main-grid.morning-collapsed .planner-cell[data-slot*="-04:"],
-.main-grid.morning-collapsed .planner-cell[data-slot*="-05:"] {
-    display: none;
-}
+/* Morning collapse sistemi kaldırıldı - 3 saatlik bloklar sistemi ile gerek yok */
 
 /* Main grid corner cell styling */
 #mainGridCorner {
@@ -741,38 +718,7 @@ body {
     flex-direction: column;
 }
 
-.morning-toggle-corner {
-    position: absolute;
-    top: -1px;
-    left: -1px;
-    z-index: 10;
-    width: 40px;
-    height: 40px;
-    border: 1px solid var(--border-primary);
-    background: var(--bg-secondary);
-    border-radius: 0 0 var(--radius) 0;
-    font-size: 1.2rem;
-    cursor: pointer;
-    color: var(--text-secondary);
-    display: flex;
-    align-items: center;
-    justify-content: center;
-    transition: all var(--transition-fast);
-    box-shadow: 0 2px 4px rgba(0,0,0,0.1);
-}
-
-.morning-toggle-corner:hover {
-    background: var(--accent-primary);
-    color: white;
-    transform: scale(1.05);
-    box-shadow: 0 4px 8px rgba(59, 130, 246, 0.3);
-}
-
-.morning-toggle-corner[aria-expanded="true"] {
-    background: var(--accent-primary);
-    color: white;
-    box-shadow: 0 4px 8px rgba(59, 130, 246, 0.3);
-}
+/* Morning toggle corner kaldırıldı - 3 saatlik bloklar sistemi ile gerek yok */
 
 /* Footer */
 .footer {
@@ -1016,7 +962,6 @@ body {
     .theme-toggle,
     .clear-btn,
     .accordion-toggle,
-    .morning-toggle-corner,
     .habits-toggle-corner,
     .add-habit-btn {
         display: none !important;
